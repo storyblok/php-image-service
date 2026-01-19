@@ -40,11 +40,8 @@ final class Image implements \Stringable
     private ?int $height = null;
     private ?bool $fitIn = null;
     private ?string $crop = null;
-
-    /**
-     * @var null|array{x: bool, y: bool}
-     */
-    private ?array $flip = null;
+    private bool $flipX = false;
+    private bool $flipY = false;
 
     /**
      * @var array<string, int|string>
@@ -170,10 +167,7 @@ final class Image implements \Stringable
     public function flipX(): self
     {
         $image = clone $this;
-        $image->flip = [
-            'x' => true,
-            'y' => $this->flip['y'] ?? false,
-        ];
+        $image->flipX = true;
 
         return $image;
     }
@@ -184,10 +178,7 @@ final class Image implements \Stringable
     public function flipY(): self
     {
         $image = clone $this;
-        $image->flip = [
-            'x' => $this->flip['x'] ?? false,
-            'y' => true,
-        ];
+        $image->flipY = true;
 
         return $image;
     }
@@ -292,7 +283,8 @@ final class Image implements \Stringable
             && null === $this->fitIn
             && null === $this->crop
             && [] === $this->filters
-            && null === $this->flip
+            && !$this->flipX
+            && !$this->flipY
         ) {
             return $url;
         }
@@ -303,15 +295,15 @@ final class Image implements \Stringable
             $url .= '/'.$this->crop;
         }
 
-        if (null !== $this->width || null !== $this->height || null !== $this->flip) {
+        if (null !== $this->width || null !== $this->height || $this->flipX || $this->flipY) {
             if (true === $this->fitIn) {
                 $url .= '/fit-in';
             }
 
-            $flipX = ($this->flip['x'] ?? false) ? '-' : '';
-            $flipY = ($this->flip['y'] ?? false) ? '-' : '';
+            $flipXPrefix = $this->flipX ? '-' : '';
+            $flipYPrefix = $this->flipY ? '-' : '';
 
-            $url .= \sprintf('/%s%dx%s%d', $flipX, $this->getWidth(), $flipY, $this->getHeight());
+            $url .= \sprintf('/%s%dx%s%d', $flipXPrefix, $this->getWidth(), $flipYPrefix, $this->getHeight());
         }
 
         if ([] !== $filters = $this->filters) {
