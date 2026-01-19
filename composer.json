@@ -1,0 +1,51 @@
+{
+    "name": "storyblok/php-image-service",
+    "type": "library",
+    "description": "PHP Client for Storyblok Image Service",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Silas Joisten",
+            "email": "silasjoisten@proton.me"
+        }
+    ],
+    "require": {
+        "php": ">=8.3",
+        "oskarstark/enum-helper": "^1.5",
+        "oskarstark/trimmed-non-empty-string": "^1.1",
+        "thecodingmachine/safe": "^3.0",
+        "webmozart/assert": "^2.0"
+    },
+    "require-dev": {
+        "ergebnis/composer-normalize": "^2.2",
+        "ergebnis/data-provider": "^3.2",
+        "ergebnis/php-cs-fixer-config": "^6.28",
+        "ergebnis/test-util": "^1.5",
+        "phpstan/extension-installer": "^1.0",
+        "phpstan/phpstan": "^2.0",
+        "phpstan/phpstan-webmozart-assert": "^2.0",
+        "phpunit/phpunit": "^11.5",
+        "thecodingmachine/phpstan-safe-rule": "^1.4"
+    },
+    "scripts": {
+        "license-check": "php license-checker.php"
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "ergebnis/composer-normalize": true,
+            "phpstan/extension-installer": true
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Storyblok\\ImageService\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Storyblok\\ImageService\\Tests\\": "tests/"
+        }
+    },
+    "minimum-stability": "stable"
+}
