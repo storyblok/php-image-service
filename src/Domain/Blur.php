@@ -23,7 +23,7 @@ final readonly class Blur implements \Stringable
 {
     public function __construct(
         public int $radius,
-        public int $sigma,
+        public int $sigma = 0,
     ) {
         Assert::range($radius, 0, 150, 'The blur radius must be between 0 and 150. Got: %s');
 
