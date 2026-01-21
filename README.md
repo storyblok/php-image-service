@@ -201,8 +201,13 @@ $image->grayscale();
 Set a focal point for smart cropping.
 
 ```php
-// Set focal point area from (x1, y1) to (x2, y2)
-$image->focalPoint(100, 100, 300, 300);
+use Storyblok\ImageService\Domain\FocalPoint;
+
+// Create from coordinates
+$image->focalPoint(new FocalPoint(100, 100, 300, 300));
+
+// Create from string (e.g., from Storyblok asset focus field)
+$image->focalPoint(FocalPoint::fromString('719x153:720x154'));
 ```
 
 ### Rounded Corners

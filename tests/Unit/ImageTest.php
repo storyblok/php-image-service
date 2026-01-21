@@ -21,6 +21,7 @@ use PHPUnit\Framework\TestCase;
 use Storyblok\ImageService\Domain\Angle;
 use Storyblok\ImageService\Domain\Blur;
 use Storyblok\ImageService\Domain\Brightness;
+use Storyblok\ImageService\Domain\FocalPoint;
 use Storyblok\ImageService\Domain\Format;
 use Storyblok\ImageService\Domain\HexCode;
 use Storyblok\ImageService\Domain\Quality;
@@ -263,20 +264,21 @@ final class ImageTest extends TestCase
 
     #[DataProvider('provideFocalPointCases')]
     #[Test]
-    public function focalPoint(int $x1, int $y1, int $x2, int $y2, string $expected): void
+    public function focalPoint(FocalPoint $focalPoint, string $expected): void
     {
-        $image = (new Image(self::URL))->focalPoint($x1, $y1, $x2, $y2);
+        $image = (new Image(self::URL))->focalPoint($focalPoint);
 
         self::assertSame($expected, $image->toString());
     }
 
     /**
-     * @return iterable<string, array{int, int, int, int, string}>
+     * @return iterable<string, array{FocalPoint, string}>
      */
     public static function provideFocalPointCases(): iterable
     {
-        yield 'center focal point' => [500, 300, 900, 600, self::URL.'/m/filters:focal(500x300:900x600)'];
-        yield 'corner focal point' => [0, 0, 200, 200, self::URL.'/m/filters:focal(0x0:200x200)'];
+        yield 'center focal point' => [new FocalPoint(500, 300, 900, 600), self::URL.'/m/filters:focal(500x300:900x600)'];
+        yield 'corner focal point' => [new FocalPoint(0, 0, 200, 200), self::URL.'/m/filters:focal(0x0:200x200)'];
+        yield 'from string' => [FocalPoint::fromString('719x153:720x154'), self::URL.'/m/filters:focal(719x153:720x154)'];
     }
 
     #[Test]

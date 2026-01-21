@@ -17,6 +17,7 @@ namespace Storyblok\ImageService;
 use Storyblok\ImageService\Domain\Angle;
 use Storyblok\ImageService\Domain\Blur;
 use Storyblok\ImageService\Domain\Brightness;
+use Storyblok\ImageService\Domain\FocalPoint;
 use Storyblok\ImageService\Domain\Format;
 use Storyblok\ImageService\Domain\HexCode;
 use Storyblok\ImageService\Domain\Quality;
@@ -186,10 +187,10 @@ final class Image implements \Stringable
     /**
      * @see https://www.storyblok.com/docs/api/image-service/operations/focal-point
      */
-    public function focalPoint(int $x1, int $y1, int $x2, int $y2): self
+    public function focalPoint(FocalPoint $focalPoint): self
     {
         $image = clone $this;
-        $image->filters['focal'] = \sprintf('%dx%d:%dx%d', $x1, $y1, $x2, $y2);
+        $image->filters['focal'] = $focalPoint->toString();
 
         return $image;
     }
