@@ -42,7 +42,6 @@ final class Image implements \Stringable
     private ?string $crop = null;
     private bool $flipX = false;
     private bool $flipY = false;
-
     private string $extension;
 
     /**
@@ -59,7 +58,7 @@ final class Image implements \Stringable
             throw new \InvalidArgumentException(\sprintf('Unable to extract dimensions from URL "%s".', $url));
         }
 
-        $this->extension = \pathinfo($url, PATHINFO_EXTENSION);
+        $this->extension = \pathinfo($url, \PATHINFO_EXTENSION);
 
         [$this->originalWidth, $this->originalHeight] = [(int) $matches[1], (int) $matches[2]];
     }
