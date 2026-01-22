@@ -454,4 +454,24 @@ final class ImageTest extends TestCase
         self::assertSame('jpg', $original->getExtension());
         self::assertSame('webp', $formatted->getExtension());
     }
+
+    #[DataProvider('provideNameCases')]
+    #[Test]
+    public function extractsNameFromUrl(string $url, string $expectedName): void
+    {
+        $image = new Image($url);
+
+        self::assertSame($expectedName, $image->getName());
+    }
+
+    /**
+     * @return iterable<string, array{string, string}>
+     */
+    public static function provideNameCases(): iterable
+    {
+        yield 'simple name' => ['https://a.storyblok.com/f/287488/1400x900/2fc896c892/image.jpg', 'image'];
+        yield 'name with hyphens' => ['https://a.storyblok.com/f/287488/1400x900/2fc896c892/my-image-file.jpg', 'my-image-file'];
+        yield 'name with underscores' => ['https://a.storyblok.com/f/287488/1400x900/2fc896c892/my_image_file.png', 'my_image_file'];
+        yield 'complex name' => ['https://a.storyblok.com/f/287488/1400x900/2fc896c892/symfony-online-icon.svg', 'symfony-online-icon'];
+    }
 }

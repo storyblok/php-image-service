@@ -44,6 +44,7 @@ final class Image implements \Stringable
     private bool $flipX = false;
     private bool $flipY = false;
     private string $extension;
+    private string $name;
 
     /**
      * @var array<string, int|string>
@@ -60,6 +61,7 @@ final class Image implements \Stringable
         }
 
         $this->extension = \pathinfo($url, \PATHINFO_EXTENSION);
+        $this->name = \pathinfo($url, \PATHINFO_FILENAME);
 
         [$this->originalWidth, $this->originalHeight] = [(int) $matches[1], (int) $matches[2]];
     }
@@ -281,6 +283,11 @@ final class Image implements \Stringable
     public function getExtension(): string
     {
         return $this->extension;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
     }
 
     public function toString(): string
