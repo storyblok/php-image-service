@@ -43,6 +43,8 @@ final class Image implements \Stringable
     private bool $flipX = false;
     private bool $flipY = false;
 
+    private string $extension;
+
     /**
      * @var array<string, int|string>
      */
@@ -56,6 +58,8 @@ final class Image implements \Stringable
         if (0 === preg_match('#/(\d+)x(\d+)/#', $url, $matches)) {
             throw new \InvalidArgumentException(\sprintf('Unable to extract dimensions from URL "%s".', $url));
         }
+
+        $this->extension = \pathinfo($url, PATHINFO_EXTENSION);
 
         [$this->originalWidth, $this->originalHeight] = [(int) $matches[1], (int) $matches[2]];
     }
@@ -157,6 +161,7 @@ final class Image implements \Stringable
     {
         $image = clone $this;
         $image->filters['format'] = $format->value;
+        $image->extension = $format->value;
 
         return $image;
     }
@@ -271,6 +276,11 @@ final class Image implements \Stringable
     public function getHeight(): int
     {
         return $this->height ?? $this->originalHeight;
+    }
+
+    public function getExtension(): string
+    {
+        return $this->extension;
     }
 
     public function toString(): string
