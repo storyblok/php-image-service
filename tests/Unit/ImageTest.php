@@ -401,4 +401,57 @@ final class ImageTest extends TestCase
         self::assertSame(self::URL.'/m/700x450', $resized->toString());
         self::assertSame(self::URL.'/m/700x450/filters:quality(80)', $withQuality->toString());
     }
+
+    #[DataProvider('provideExtensionCases')]
+    #[Test]
+    public function extractsExtensionFromUrl(string $url, string $expectedExtension): void
+    {
+        $image = new Image($url);
+
+        self::assertSame($expectedExtension, $image->getExtension());
+    }
+
+    /**
+     * @return iterable<string, array{string, string}>
+     */
+    public static function provideExtensionCases(): iterable
+    {
+        yield 'jpg' => ['https://a.storyblok.com/f/287488/1400x900/2fc896c892/image.jpg', 'jpg'];
+        yield 'jpeg' => ['https://a.storyblok.com/f/287488/1400x900/2fc896c892/image.jpeg', 'jpeg'];
+        yield 'png' => ['https://a.storyblok.com/f/287488/1400x900/2fc896c892/image.png', 'png'];
+        yield 'webp' => ['https://a.storyblok.com/f/287488/1400x900/2fc896c892/image.webp', 'webp'];
+        yield 'svg' => ['https://a.storyblok.com/f/287488/1400x900/2fc896c892/image.svg', 'svg'];
+        yield 'gif' => ['https://a.storyblok.com/f/287488/1400x900/2fc896c892/image.gif', 'gif'];
+        yield 'avif' => ['https://a.storyblok.com/f/287488/1400x900/2fc896c892/image.avif', 'avif'];
+    }
+
+    #[DataProvider('provideFormatExtensionCases')]
+    #[Test]
+    public function formatChangesExtension(Format $format, string $expectedExtension): void
+    {
+        $image = (new Image(self::URL))->format($format);
+
+        self::assertSame($expectedExtension, $image->getExtension());
+    }
+
+    /**
+     * @return iterable<string, array{Format, string}>
+     */
+    public static function provideFormatExtensionCases(): iterable
+    {
+        yield 'webp' => [Format::Webp, 'webp'];
+        yield 'jpeg' => [Format::Jpeg, 'jpeg'];
+        yield 'png' => [Format::Png, 'png'];
+        yield 'avif' => [Format::Avif, 'avif'];
+    }
+
+    #[Test]
+    public function formatDoesNotChangeOriginalExtension(): void
+    {
+        $original = new Image(self::URL);
+        $formatted = $original->format(Format::Webp);
+
+        self::assertSame('jpg', $original->getExtension());
+        self::assertSame('webp', $formatted->getExtension());
+    }
 }
