@@ -1,5 +1,6 @@
 <div align="center">
-    <h1 align="center">Storyblok Image Service</h1>
+    <img src="assets/php-image-service-github-repository.png" alt="Storyblok PHP Image Service" align="center" />
+    <h1 align="center">Storyblok PHP Image Service</h1>
     <p align="center">Co-created with <a href="https://sensiolabs.com/">SensioLabs</a>, the creators of Symfony.</p>
 </div>
 
