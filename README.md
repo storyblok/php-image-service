@@ -21,16 +21,14 @@ composer require storyblok/php-image-service
 
 ```php
 use Storyblok\ImageService\Image;
-use Storyblok\ImageService\Domain\Format;
-use Storyblok\ImageService\Domain\Quality;
 
 $image = new Image('https://a.storyblok.com/f/287488/1400x900/2fc896c892/image.jpg');
 
 // Chain multiple operations
 $url = $image
     ->resize(800, 600)
-    ->format(Format::Webp)
-    ->quality(new Quality(80))
+    ->format('webp')
+    ->quality(80)
     ->toString();
 ```
 
@@ -40,10 +38,6 @@ The `Image` class supports a fluent interface, allowing you to chain multiple op
 
 ```php
 use Storyblok\ImageService\Image;
-use Storyblok\ImageService\Domain\Angle;
-use Storyblok\ImageService\Domain\Format;
-use Storyblok\ImageService\Domain\Quality;
-use Storyblok\ImageService\Domain\Brightness;
 
 $image = new Image('https://a.storyblok.com/f/287488/1400x900/2fc896c892/image.jpg');
 
@@ -52,17 +46,17 @@ $url = $image
     ->crop(100, 50, 800, 600)
     ->resize(400, 300)
     ->flipX()
-    ->rotate(Angle::DEG_90)
-    ->brightness(new Brightness(10))
-    ->quality(new Quality(80))
-    ->format(Format::Webp)
+    ->rotate(90)
+    ->brightness(10)
+    ->quality(80)
+    ->format('webp')
     ->grayscale()
     ->toString();
 
 // The original image remains unchanged (immutability)
 $original = new Image('https://a.storyblok.com/f/287488/1400x900/2fc896c892/image.jpg');
 $resized = $original->resize(800, 600);
-$withQuality = $resized->quality(new Quality(80));
+$withQuality = $resized->quality(80);
 
 // Each variable holds a different state:
 // $original    -> original URL
@@ -93,7 +87,7 @@ $image->resize(0, 600);
 
 ### Fit-In
 
-Fit the image within a given width and height while maintaining aspect ratio. The dimensions cannot exceed the original image dimensions.
+Fit the image within a given width and height while maintaining aspect ratio.
 
 ```php
 $image->fitIn(800, 600);
@@ -113,15 +107,13 @@ $image->crop(0, 0, 500, 400);
 
 ### Format
 
-Convert the image to a different format.
+Convert the image to a different format. Supported formats: `webp`, `jpeg`, `png`, `avif`.
 
 ```php
-use Storyblok\ImageService\Domain\Format;
-
-$image->format(Format::Webp);
-$image->format(Format::Jpeg);
-$image->format(Format::Png);
-$image->format(Format::Avif);
+$image->format('webp');
+$image->format('jpeg');
+$image->format('png');
+$image->format('avif');
 ```
 
 ### Quality
@@ -129,23 +121,19 @@ $image->format(Format::Avif);
 Set the image quality (0-100).
 
 ```php
-use Storyblok\ImageService\Domain\Quality;
-
-$image->quality(new Quality(80));
+$image->quality(80);
 ```
 
 ### Blur
 
-Apply a blur effect with radius (0-150) and sigma (0-150).
+Apply a blur effect with radius (0-150) and optional sigma (0-150).
 
 ```php
-use Storyblok\ImageService\Domain\Blur;
+// Apply blur with radius only
+$image->blur(10);
 
 // Apply blur with radius and sigma
-$image->blur(new Blur(10, 5));
-
-// Radius only (sigma must be 0 when radius is 0)
-$image->blur(new Blur(10, 0));
+$image->blur(10, 5);
 ```
 
 ### Brightness
@@ -153,13 +141,11 @@ $image->blur(new Blur(10, 0));
 Adjust image brightness (-100 to 100).
 
 ```php
-use Storyblok\ImageService\Domain\Brightness;
-
 // Increase brightness
-$image->brightness(new Brightness(50));
+$image->brightness(50);
 
 // Decrease brightness
-$image->brightness(new Brightness(-30));
+$image->brightness(-30);
 ```
 
 ### Rotate
@@ -167,11 +153,9 @@ $image->brightness(new Brightness(-30));
 Rotate the image by a specific angle. Only 0, 90, 180, and 270 degrees are supported.
 
 ```php
-use Storyblok\ImageService\Domain\Angle;
-
-$image->rotate(Angle::DEG_90);
-$image->rotate(Angle::DEG_180);
-$image->rotate(Angle::DEG_270);
+$image->rotate(90);
+$image->rotate(180);
+$image->rotate(270);
 ```
 
 ### Flip
@@ -199,16 +183,14 @@ $image->grayscale();
 
 ### Focal Point
 
-Set a focal point for smart cropping.
+Set a focal point for smart cropping using a string in format `x1xy1:x2xy2`.
 
 ```php
-use Storyblok\ImageService\Domain\FocalPoint;
+// Set focal point coordinates
+$image->focalPoint('100x100:300x300');
 
-// Create from coordinates
-$image->focalPoint(new FocalPoint(100, 100, 300, 300));
-
-// Create from string (e.g., from Storyblok asset focus field)
-$image->focalPoint(FocalPoint::fromString('719x153:720x154'));
+// Use value from Storyblok asset focus field
+$image->focalPoint('719x153:720x154');
 ```
 
 ### Rounded Corners
@@ -216,36 +198,31 @@ $image->focalPoint(FocalPoint::fromString('719x153:720x154'));
 Apply rounded corners to the image.
 
 ```php
-use Storyblok\ImageService\Domain\RoundedCorner;
-
 // Simple rounded corners with radius
-$image->roundedCorners(new RoundedCorner(20));
+$image->roundedCorners(20);
 
 // With ellipsis for elliptical corners
-$image->roundedCorners(new RoundedCorner(20, 10));
+$image->roundedCorners(20, 10);
 
 // With custom background color (RGB)
-$image->roundedCorners(new RoundedCorner(20, null, 255, 0, 0));
+$image->roundedCorners(20, null, 255, 0, 0);
 
 // With transparent background
-$image->roundedCorners(new RoundedCorner(20, null, 255, 255, 255, true));
+$image->roundedCorners(20, null, 255, 255, 255, true);
 ```
 
 ### Fill
 
-Set a fill color for fit-in operations.
+Set a fill color for fit-in operations. Accepts `transparent` or a hex color code.
 
 ```php
-use Storyblok\ImageService\Domain\HexCode;
-use Storyblok\ImageService\Domain\Transparent;
-
 // Fill with hex color
-$image->fitIn(800, 600)->fill(new HexCode('#FF0000'));
-$image->fitIn(800, 600)->fill(new HexCode('FF0000'));
-$image->fitIn(800, 600)->fill(new HexCode('#F00'));
+$image->fitIn(800, 600)->fill('#FF0000');
+$image->fitIn(800, 600)->fill('FF0000');
+$image->fitIn(800, 600)->fill('#F00');
 
 // Fill with transparent
-$image->fitIn(800, 600)->fill(new Transparent());
+$image->fitIn(800, 600)->fill('transparent');
 ```
 
 ### No Upscale
@@ -256,18 +233,38 @@ Prevent the image from being upscaled beyond its original dimensions.
 $image->resize(2000, 2000)->noUpscale();
 ```
 
+### Get Image Metadata
+
+Retrieve information about the image.
+
+```php
+$image = new Image('https://a.storyblok.com/f/287488/1400x900/2fc896c892/my-image.jpg');
+
+// Get dimensions
+$image->getWidth();     // 1400
+$image->getHeight();    // 900
+
+// Get file info
+$image->getName();      // "my-image"
+$image->getExtension(); // "jpg"
+
+// Extension updates when format changes
+$formatted = $image->format('webp');
+$formatted->getExtension(); // "webp"
+```
+
 ## Limitations
 
 The following limitations apply:
 
 - **URL Format**: The image URL must contain dimensions in the format `/{width}x{height}/` (e.g., `/1400x900/`). URLs without this pattern will throw an `InvalidArgumentException`.
 - **Rotation Angles**: Only 0, 90, 180, and 270 degree rotations are supported. Arbitrary angles are not available.
-- **Fit-In Dimensions**: When using `fitIn()`, the width and height cannot exceed the original image dimensions.
 - **Blur Constraints**: The blur sigma cannot be set to a value greater than 0 when the radius is 0.
 - **Quality Range**: Quality must be between 0 and 100.
 - **Brightness Range**: Brightness must be between -100 and 100.
 - **Blur Range**: Both radius and sigma must be between 0 and 150.
 - **RGB Values**: For rounded corners, RGB values must be between 0 and 255.
+- **Format Values**: Format must be one of `webp`, `jpeg`, `png`, or `avif`.
 
 ## License
 
