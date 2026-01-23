@@ -133,8 +133,8 @@ final class Image implements \Stringable
      */
     public function fitIn(int $width, int $height): self
     {
-        Assert::range($width, 0, $this->originalWidth, 'Width must be between 0 and %d, "%d" given.');
-        Assert::range($height, 0, $this->originalHeight, 'Height must be between 0 and %d, "%d" given.');
+        Assert::greaterThanEq($width, 0, 'Width must be minimum 0, "%d" given.');
+        Assert::greaterThanEq($height, 0, 'Height must be minimum 0, "%d" given.');
 
         $image = clone $this;
 
