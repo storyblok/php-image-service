@@ -18,15 +18,6 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Storyblok\ImageService\Domain\Angle;
-use Storyblok\ImageService\Domain\Blur;
-use Storyblok\ImageService\Domain\Brightness;
-use Storyblok\ImageService\Domain\FocalPoint;
-use Storyblok\ImageService\Domain\Format;
-use Storyblok\ImageService\Domain\HexCode;
-use Storyblok\ImageService\Domain\Quality;
-use Storyblok\ImageService\Domain\RoundedCorner;
-use Storyblok\ImageService\Domain\Transparent;
 use Storyblok\ImageService\Image;
 
 /**
@@ -67,7 +58,7 @@ final class ImageTest extends TestCase
     #[Test]
     public function blur(int $radius, int $sigma, string $expected): void
     {
-        $image = (new Image(self::URL))->blur(new Blur($radius, $sigma));
+        $image = (new Image(self::URL))->blur($radius, $sigma);
 
         self::assertSame($expected, $image->toString());
     }
@@ -86,7 +77,7 @@ final class ImageTest extends TestCase
     #[Test]
     public function quality(int $value, string $expected): void
     {
-        $image = (new Image(self::URL))->quality(new Quality($value));
+        $image = (new Image(self::URL))->quality($value);
 
         self::assertSame($expected, $image->toString());
     }
@@ -105,7 +96,7 @@ final class ImageTest extends TestCase
     #[Test]
     public function brightness(int $value, string $expected): void
     {
-        $image = (new Image(self::URL))->brightness(new Brightness($value));
+        $image = (new Image(self::URL))->brightness($value);
 
         self::assertSame($expected, $image->toString());
     }
@@ -122,7 +113,7 @@ final class ImageTest extends TestCase
 
     #[DataProvider('provideFormatCases')]
     #[Test]
-    public function format(Format $format, string $expected): void
+    public function format(string $format, string $expected): void
     {
         $image = (new Image(self::URL))->format($format);
 
@@ -130,19 +121,19 @@ final class ImageTest extends TestCase
     }
 
     /**
-     * @return iterable<string, array{Format, string}>
+     * @return iterable<string, array{string, string}>
      */
     public static function provideFormatCases(): iterable
     {
-        yield 'webp' => [Format::Webp, self::URL.'/m/filters:format(webp)'];
-        yield 'jpeg' => [Format::Jpeg, self::URL.'/m/filters:format(jpeg)'];
-        yield 'png' => [Format::Png, self::URL.'/m/filters:format(png)'];
-        yield 'avif' => [Format::Avif, self::URL.'/m/filters:format(avif)'];
+        yield 'webp' => ['webp', self::URL.'/m/filters:format(webp)'];
+        yield 'jpeg' => ['jpeg', self::URL.'/m/filters:format(jpeg)'];
+        yield 'png' => ['png', self::URL.'/m/filters:format(png)'];
+        yield 'avif' => ['avif', self::URL.'/m/filters:format(avif)'];
     }
 
     #[DataProvider('provideRotateCases')]
     #[Test]
-    public function rotate(Angle $angle, string $expected): void
+    public function rotate(int $angle, string $expected): void
     {
         $image = (new Image(self::URL))->rotate($angle);
 
@@ -150,14 +141,14 @@ final class ImageTest extends TestCase
     }
 
     /**
-     * @return iterable<string, array{Angle, string}>
+     * @return iterable<string, array{int, string}>
      */
     public static function provideRotateCases(): iterable
     {
-        yield '0 degrees' => [Angle::DEG_0, self::URL.'/m/filters:rotate(0)'];
-        yield '90 degrees' => [Angle::DEG_90, self::URL.'/m/filters:rotate(90)'];
-        yield '180 degrees' => [Angle::DEG_180, self::URL.'/m/filters:rotate(180)'];
-        yield '270 degrees' => [Angle::DEG_270, self::URL.'/m/filters:rotate(270)'];
+        yield '0 degrees' => [0, self::URL.'/m/filters:rotate(0)'];
+        yield '90 degrees' => [90, self::URL.'/m/filters:rotate(90)'];
+        yield '180 degrees' => [180, self::URL.'/m/filters:rotate(180)'];
+        yield '270 degrees' => [270, self::URL.'/m/filters:rotate(270)'];
     }
 
     #[Test]
@@ -178,7 +169,7 @@ final class ImageTest extends TestCase
 
     #[DataProvider('provideFillCases')]
     #[Test]
-    public function fill(HexCode|Transparent $color, string $expected): void
+    public function fill(string $color, string $expected): void
     {
         $image = (new Image(self::URL))->fill($color);
 
@@ -186,33 +177,33 @@ final class ImageTest extends TestCase
     }
 
     /**
-     * @return iterable<string, array{HexCode|Transparent, string}>
+     * @return iterable<string, array{string, string}>
      */
     public static function provideFillCases(): iterable
     {
-        yield 'transparent' => [new Transparent(), self::URL.'/m/filters:fill(transparent)'];
-        yield 'hex without hash' => [new HexCode('CCCCCC'), self::URL.'/m/filters:fill(CCCCCC)'];
-        yield 'hex with hash' => [new HexCode('#FF0000'), self::URL.'/m/filters:fill(FF0000)'];
+        yield 'transparent' => ['transparent', self::URL.'/m/filters:fill(transparent)'];
+        yield 'hex without hash' => ['CCCCCC', self::URL.'/m/filters:fill(CCCCCC)'];
+        yield 'hex with hash' => ['#FF0000', self::URL.'/m/filters:fill(FF0000)'];
     }
 
     #[DataProvider('provideRoundedCornersCases')]
     #[Test]
-    public function roundedCorners(RoundedCorner $roundedCorner, string $expected): void
+    public function roundedCorners(int $radius, ?int $ellipsis, int $red, int $green, int $blue, bool $transparent, string $expected): void
     {
-        $image = (new Image(self::URL))->roundedCorners($roundedCorner);
+        $image = (new Image(self::URL))->roundedCorners($radius, $ellipsis, $red, $green, $blue, $transparent);
 
         self::assertSame($expected, $image->toString());
     }
 
     /**
-     * @return iterable<string, array{RoundedCorner, string}>
+     * @return iterable<string, array{int, null|int, int, int, int, bool, string}>
      */
     public static function provideRoundedCornersCases(): iterable
     {
-        yield 'radius only' => [new RoundedCorner(20), self::URL.'/m/filters:round_corner(20,255,255,255,0)'];
-        yield 'with ellipsis' => [new RoundedCorner(20, 10), self::URL.'/m/filters:round_corner(20|10,255,255,255,0)'];
-        yield 'with colors' => [new RoundedCorner(20, null, 128, 64, 32), self::URL.'/m/filters:round_corner(20,128,64,32,0)'];
-        yield 'transparent' => [new RoundedCorner(20, null, 255, 255, 255, true), self::URL.'/m/filters:round_corner(20,255,255,255,1)'];
+        yield 'radius only' => [20, null, 255, 255, 255, false, self::URL.'/m/filters:round_corner(20,255,255,255,0)'];
+        yield 'with ellipsis' => [20, 10, 255, 255, 255, false, self::URL.'/m/filters:round_corner(20|10,255,255,255,0)'];
+        yield 'with colors' => [20, null, 128, 64, 32, false, self::URL.'/m/filters:round_corner(20,128,64,32,0)'];
+        yield 'transparent' => [20, null, 255, 255, 255, true, self::URL.'/m/filters:round_corner(20,255,255,255,1)'];
     }
 
     #[DataProvider('provideResizeCases')]
@@ -275,7 +266,7 @@ final class ImageTest extends TestCase
 
     #[DataProvider('provideFocalPointCases')]
     #[Test]
-    public function focalPoint(FocalPoint $focalPoint, string $expected): void
+    public function focalPoint(string $focalPoint, string $expected): void
     {
         $image = (new Image(self::URL))->focalPoint($focalPoint);
 
@@ -283,13 +274,13 @@ final class ImageTest extends TestCase
     }
 
     /**
-     * @return iterable<string, array{FocalPoint, string}>
+     * @return iterable<string, array{string, string}>
      */
     public static function provideFocalPointCases(): iterable
     {
-        yield 'center focal point' => [new FocalPoint(500, 300, 900, 600), self::URL.'/m/filters:focal(500x300:900x600)'];
-        yield 'corner focal point' => [new FocalPoint(0, 0, 200, 200), self::URL.'/m/filters:focal(0x0:200x200)'];
-        yield 'from string' => [FocalPoint::fromString('719x153:720x154'), self::URL.'/m/filters:focal(719x153:720x154)'];
+        yield 'center focal point' => ['500x300:900x600', self::URL.'/m/filters:focal(500x300:900x600)'];
+        yield 'corner focal point' => ['0x0:200x200', self::URL.'/m/filters:focal(0x0:200x200)'];
+        yield 'from string' => ['719x153:720x154', self::URL.'/m/filters:focal(719x153:720x154)'];
     }
 
     #[Test]
@@ -320,9 +311,9 @@ final class ImageTest extends TestCase
     public function multipleFiltersAreSortedAlphabetically(): void
     {
         $image = (new Image(self::URL))
-            ->quality(new Quality(80))
-            ->brightness(new Brightness(10))
-            ->format(Format::Webp);
+            ->quality(80)
+            ->brightness(10)
+            ->format('webp');
 
         self::assertSame(
             self::URL.'/m/filters:brightness(10):format(webp):quality(80)',
@@ -335,8 +326,8 @@ final class ImageTest extends TestCase
     {
         $image = (new Image(self::URL))
             ->resize(700, 450)
-            ->quality(new Quality(80))
-            ->format(Format::Webp);
+            ->quality(80)
+            ->format('webp');
 
         self::assertSame(
             self::URL.'/m/700x450/filters:format(webp):quality(80)',
@@ -349,8 +340,8 @@ final class ImageTest extends TestCase
     {
         $image = (new Image(self::URL))
             ->fitIn(700, 450)
-            ->fill(new HexCode('CCCCCC'))
-            ->format(Format::Webp);
+            ->fill('CCCCCC')
+            ->format('webp');
 
         self::assertSame(
             self::URL.'/m/fit-in/700x450/filters:fill(CCCCCC):format(webp)',
@@ -391,8 +382,8 @@ final class ImageTest extends TestCase
             ->crop(100, 50, 800, 600)
             ->resize(350, 275)
             ->flipX()
-            ->quality(new Quality(80))
-            ->format(Format::Webp)
+            ->quality(80)
+            ->format('webp')
             ->grayscale();
 
         self::assertSame(
@@ -406,7 +397,7 @@ final class ImageTest extends TestCase
     {
         $original = new Image(self::URL);
         $resized = $original->resize(700, 450);
-        $withQuality = $resized->quality(new Quality(80));
+        $withQuality = $resized->quality(80);
 
         self::assertSame(self::URL, $original->toString());
         self::assertSame(self::URL.'/m/700x450', $resized->toString());
@@ -438,7 +429,7 @@ final class ImageTest extends TestCase
 
     #[DataProvider('provideFormatExtensionCases')]
     #[Test]
-    public function formatChangesExtension(Format $format, string $expectedExtension): void
+    public function formatChangesExtension(string $format, string $expectedExtension): void
     {
         $image = (new Image(self::URL))->format($format);
 
@@ -446,21 +437,21 @@ final class ImageTest extends TestCase
     }
 
     /**
-     * @return iterable<string, array{Format, string}>
+     * @return iterable<string, array{string, string}>
      */
     public static function provideFormatExtensionCases(): iterable
     {
-        yield 'webp' => [Format::Webp, 'webp'];
-        yield 'jpeg' => [Format::Jpeg, 'jpeg'];
-        yield 'png' => [Format::Png, 'png'];
-        yield 'avif' => [Format::Avif, 'avif'];
+        yield 'webp' => ['webp', 'webp'];
+        yield 'jpeg' => ['jpeg', 'jpeg'];
+        yield 'png' => ['png', 'png'];
+        yield 'avif' => ['avif', 'avif'];
     }
 
     #[Test]
     public function formatDoesNotChangeOriginalExtension(): void
     {
         $original = new Image(self::URL);
-        $formatted = $original->format(Format::Webp);
+        $formatted = $original->format('webp');
 
         self::assertSame('jpg', $original->getExtension());
         self::assertSame('webp', $formatted->getExtension());

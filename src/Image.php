@@ -14,15 +14,6 @@ declare(strict_types=1);
 
 namespace Storyblok\ImageService;
 
-use Storyblok\ImageService\Domain\Angle;
-use Storyblok\ImageService\Domain\Blur;
-use Storyblok\ImageService\Domain\Brightness;
-use Storyblok\ImageService\Domain\FocalPoint;
-use Storyblok\ImageService\Domain\Format;
-use Storyblok\ImageService\Domain\HexCode;
-use Storyblok\ImageService\Domain\Quality;
-use Storyblok\ImageService\Domain\RoundedCorner;
-use Storyblok\ImageService\Domain\Transparent;
 use Webmozart\Assert\Assert;
 use function Safe\preg_match;
 
@@ -35,6 +26,8 @@ use function Safe\preg_match;
  */
 final class Image implements \Stringable
 {
+    private const array VALID_FORMATS = ['webp', 'jpeg', 'png', 'avif'];
+    private const array VALID_ANGLES = [0, 90, 180, 270];
     private int $originalWidth;
     private int $originalHeight;
     private ?int $width = null;
@@ -74,12 +67,26 @@ final class Image implements \Stringable
     /**
      * @see https://www.storyblok.com/docs/api/image-service/operations/blur
      */
-    public function blur(Blur $blur): self
+    public function blur(int $radius, int $sigma = 0): self
     {
+        Assert::range($radius, 0, 150, 'The blur radius must be between 0 and 150. Got: %s');
+
+        if (0 === $radius && 0 < $sigma) {
+            throw new \InvalidArgumentException('The blur sigma cannot be set when the radius is 0.');
+        }
+
+        Assert::range($sigma, 0, 150, 'The blur sigma must be between 0 and 150. Got: %s');
+
         $image = clone $this;
 
-        if ('' !== $blur->toString()) {
-            $image->filters['blur'] = $blur->toString();
+        if (0 !== $radius) {
+            $blur = (string) $radius;
+
+            if (0 !== $sigma) {
+                $blur .= \sprintf(', %d', $sigma);
+            }
+
+            $image->filters['blur'] = $blur;
         }
 
         return $image;
@@ -88,10 +95,12 @@ final class Image implements \Stringable
     /**
      * @see https://www.storyblok.com/docs/api/image-service/operations/quality
      */
-    public function quality(Quality $quality): self
+    public function quality(int $quality): self
     {
+        Assert::range($quality, 0, 100, 'Quality must be between 0 and 100, "%d" given.');
+
         $image = clone $this;
-        $image->filters['quality'] = $quality->toString();
+        $image->filters['quality'] = (string) $quality;
 
         return $image;
     }
@@ -99,10 +108,12 @@ final class Image implements \Stringable
     /**
      * @see https://www.storyblok.com/docs/api/image-service/operations/brightness
      */
-    public function brightness(Brightness $brightness): self
+    public function brightness(int $brightness): self
     {
+        Assert::range($brightness, -100, 100, 'Brightness must be between -100 and 100, "%d" given.');
+
         $image = clone $this;
-        $image->filters['brightness'] = $brightness->toString();
+        $image->filters['brightness'] = (string) $brightness;
 
         return $image;
     }
@@ -148,10 +159,21 @@ final class Image implements \Stringable
     /**
      * @see https://www.storyblok.com/docs/api/image-service/operations/fit-in
      */
-    public function fill(HexCode|Transparent $color): self
+    public function fill(string $color): self
     {
+        $color = trim($color);
+
+        if ('transparent' !== $color) {
+            Assert::regex(
+                $color,
+                '/^#?([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$/',
+                'Color must be "transparent" or a valid hexadecimal color code, "%s" given.',
+            );
+            $color = ltrim($color, '#');
+        }
+
         $image = clone $this;
-        $image->filters['fill'] = $color->toString();
+        $image->filters['fill'] = $color;
 
         return $image;
     }
@@ -159,11 +181,13 @@ final class Image implements \Stringable
     /**
      * @see https://www.storyblok.com/docs/api/image-service/operations/format
      */
-    public function format(Format $format): self
+    public function format(string $format): self
     {
+        Assert::inArray($format, self::VALID_FORMATS, 'Format must be one of "webp", "jpeg", "png", "avif", "%s" given.');
+
         $image = clone $this;
-        $image->filters['format'] = $format->value;
-        $image->extension = $format->value;
+        $image->filters['format'] = $format;
+        $image->extension = $format;
 
         return $image;
     }
@@ -193,10 +217,26 @@ final class Image implements \Stringable
     /**
      * @see https://www.storyblok.com/docs/api/image-service/operations/focal-point
      */
-    public function focalPoint(FocalPoint $focalPoint): self
+    public function focalPoint(string $focalPoint): self
     {
+        Assert::regex(
+            $focalPoint,
+            '/^(\d+)x(\d+):(\d+)x(\d+)$/',
+            'Focal point must be in format "x1xy1:x2xy2" (e.g., "719x153:720x154"), "%s" given.',
+        );
+
+        preg_match('/^(\d+)x(\d+):(\d+)x(\d+)$/', $focalPoint, $matches);
+
+        $x1 = (int) $matches[1];
+        $y1 = (int) $matches[2];
+        $x2 = (int) $matches[3];
+        $y2 = (int) $matches[4];
+
+        Assert::greaterThanEq($x2, $x1, 'x2 must be greater than or equal to x1, x1="%d", x2="%d" given.');
+        Assert::greaterThanEq($y2, $y1, 'y2 must be greater than or equal to y1, y1="%d", y2="%d" given.');
+
         $image = clone $this;
-        $image->filters['focal'] = $focalPoint->toString();
+        $image->filters['focal'] = $focalPoint;
 
         return $image;
     }
@@ -251,10 +291,12 @@ final class Image implements \Stringable
     /**
      * @see https://www.storyblok.com/docs/api/image-service/operations/rotate
      */
-    public function rotate(Angle $angle): self
+    public function rotate(int $angle): self
     {
+        Assert::inArray($angle, self::VALID_ANGLES, 'Angle must be one of 0, 90, 180, 270, "%d" given.');
+
         $image = clone $this;
-        $image->filters['rotate'] = $angle->value;
+        $image->filters['rotate'] = $angle;
 
         return $image;
     }
@@ -262,10 +304,37 @@ final class Image implements \Stringable
     /**
      * @see https://www.storyblok.com/docs/api/image-service/operations/rounded-corners
      */
-    public function roundedCorners(RoundedCorner $roundedCorner): self
-    {
+    public function roundedCorners(
+        int $radius,
+        ?int $ellipsis = null,
+        int $red = 255,
+        int $green = 255,
+        int $blue = 255,
+        bool $transparent = false,
+    ): self {
+        Assert::greaterThanEq($radius, 0, 'Radius must be greater than or equal to 0, "%d" given.');
+
+        if (null !== $ellipsis) {
+            Assert::greaterThanEq($ellipsis, 0, 'Ellipsis must be greater than or equal to 0, "%d" given.');
+        }
+
+        Assert::range($red, 0, 255, 'Red must be between 0 and 255, "%d" given.');
+        Assert::range($green, 0, 255, 'Green must be between 0 and 255, "%d" given.');
+        Assert::range($blue, 0, 255, 'Blue must be between 0 and 255, "%d" given.');
+
+        $radiusPart = null !== $ellipsis
+            ? \sprintf('%d|%d', $radius, $ellipsis)
+            : (string) $radius;
+
         $image = clone $this;
-        $image->filters['round_corner'] = $roundedCorner->toString();
+        $image->filters['round_corner'] = \sprintf(
+            '%s,%d,%d,%d,%d',
+            $radiusPart,
+            $red,
+            $green,
+            $blue,
+            $transparent ? 1 : 0,
+        );
 
         return $image;
     }
