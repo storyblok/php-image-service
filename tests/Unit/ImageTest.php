@@ -234,12 +234,23 @@ final class ImageTest extends TestCase
         yield 'height only keeps original dimensions' => [0, 450, self::URL.'/m/1400x900'];
     }
 
+    #[DataProvider('provideFitInCases')]
     #[Test]
-    public function fitIn(): void
+    public function fitIn(int $width, int $height, string $expected): void
     {
-        $image = (new Image(self::URL))->fitIn(700, 450);
+        $image = (new Image(self::URL))->fitIn($width, $height);
 
-        self::assertSame(self::URL.'/m/fit-in/700x450', $image->toString());
+        self::assertSame($expected, $image->toString());
+    }
+
+    /**
+     * @return iterable<string, array{int, int, string}>
+     */
+    public static function provideFitInCases(): iterable
+    {
+        yield 'smaller than original' => [700, 450, self::URL.'/m/fit-in/700x450'];
+        yield 'larger than original' => [2000, 1500, self::URL.'/m/fit-in/2000x1500'];
+        yield 'same as original' => [1400, 900, self::URL.'/m/fit-in/1400x900'];
     }
 
     #[DataProvider('provideCropCases')]
