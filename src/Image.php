@@ -56,6 +56,7 @@ final class Image implements \Stringable
         $this->extension = \pathinfo($url, \PATHINFO_EXTENSION);
         $this->name = \pathinfo($url, \PATHINFO_FILENAME);
 
+        /** @var array{1: string, 2: string} $matches */
         [$this->originalWidth, $this->originalHeight] = [(int) $matches[1], (int) $matches[2]];
     }
 
@@ -227,6 +228,7 @@ final class Image implements \Stringable
 
         preg_match('/^(\d+)x(\d+):(\d+)x(\d+)$/', $focalPoint, $matches);
 
+        /** @var array{1: string, 2: string, 3: string, 4: string} $matches */
         $x1 = (int) $matches[1];
         $y1 = (int) $matches[2];
         $x2 = (int) $matches[3];
