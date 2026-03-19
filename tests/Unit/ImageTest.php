@@ -19,6 +19,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Storyblok\ImageService\Image;
+use function var_dump;
 
 /**
  * @author Silas Joisten <silasjoisten@proton.me>
@@ -211,7 +212,6 @@ final class ImageTest extends TestCase
     public function resize(int $width, int $height, string $expected): void
     {
         $image = (new Image(self::URL))->resize($width, $height);
-
         self::assertSame($expected, $image->toString());
     }
 
@@ -221,8 +221,8 @@ final class ImageTest extends TestCase
     public static function provideResizeCases(): iterable
     {
         yield 'both dimensions' => [700, 450, self::URL.'/m/700x450'];
-        yield 'width only keeps original dimensions' => [700, 0, self::URL.'/m/1400x900'];
-        yield 'height only keeps original dimensions' => [0, 450, self::URL.'/m/1400x900'];
+        yield 'width only resizes properly' => [700, 0, self::URL.'/m/700x579'];
+        yield 'height only resizes properly' => [0, 450, self::URL.'/m/900x450'];
     }
 
     #[DataProvider('provideFitInCases')]
