@@ -261,20 +261,17 @@ final class Image implements \Stringable
     {
         $image = clone $this;
 
+        // Ensure that at least one dimension is set.
         if (0 === $width) {
             Assert::greaterThan($height, 0);
-            $width = $this->originalWidth;
-            $height = $this->originalHeight * $width / $this->originalWidth;
         }
 
         if (0 === $height) {
             Assert::greaterThan($width, 0);
-            $height = $this->originalHeight;
-            $width = $this->originalWidth * $height / $this->originalHeight;
         }
 
-        $image->width = (int) $width;
-        $image->height = (int) $height;
+        $image->width = $width;
+        $image->height = $height;
 
         return $image;
     }
